@@ -1,0 +1,10 @@
+ver: 1
+debug: false
+#插件消息前缀
+prefix: '§c§l[§f§lMoe §b§lSign§c§l] §r'
+#最大游戏币
+maxMoney: 600
+#最小游戏币
+minMoney: -300
+#随机种子前缀(请修改已防止逆向种子破解)
+seed: "MoeSign"
