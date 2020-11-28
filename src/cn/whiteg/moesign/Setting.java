@@ -47,14 +47,17 @@ public class Setting {
         DEBUG = config.getBoolean("debug");
         prefix = config.getString("prefix");
         maxMoney = config.getInt("maxMoney");
+        if (maxMoney < 0){
+            maxMoney = 0;
+        }
         minMoney = config.getInt("minMoney");
         seed = config.getString("seed");
 
         //如果最大小于最小,互相交换值
         if (maxMoney < minMoney){
-            int max = minMoney;
+            int tmp = minMoney;
             minMoney = maxMoney;
-            maxMoney = max;
+            maxMoney = tmp;
         }
         file = new File(file.getParentFile(),"storage.yml");
         if (file.exists()){

@@ -13,6 +13,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -20,8 +21,9 @@ import java.util.Random;
 
 public class sign extends CommandInterface {
 
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    private String zeroDate = dateFormat.format(new Date(0));
+    private final static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    private final static DecimalFormat decimalFormat = new DecimalFormat(); //输出格式
+    private final static String zeroDate = dateFormat.format(new Date(0));
 
     @Override
     public boolean onCommand(CommandSender sender,Command cmd,String label,String[] args) {
@@ -55,12 +57,12 @@ public class sign extends CommandInterface {
             if (str.isEmpty()){ //未使用种子
                 random = new Random();
             } else {
-                random = new Random(settin.seed.hashCode() ^ nowDate.hashCode() ^ +str.hashCode());
+                random = new Random(settin.seed.hashCode() ^ nowDate.hashCode() ^ str.hashCode());
             }
 
-            int min = Math.abs(settin.minMoney);
-            int money = random.nextInt(settin.maxMoney + min) - min;
-
+            int money;
+            int min = settin.minMoney;
+            money = random.nextInt(settin.maxMoney + Math.abs(min)) + min;
             data.set("date",nowDate);
 
             //引用MoeEco
@@ -68,17 +70,20 @@ public class sign extends CommandInterface {
                 VaultHandler moeEco = (VaultHandler) economy;
                 EconomyResponse response;
 
+
                 boolean win = money > 0;
 
                 if (win){
                     response = moeEco.depositPlayer(dc,money);
                 } else {
                     response = moeEco.withdrawPlayer(dc,-money);
+                    //如果玩家账户余额不够扣怎么办呢...
                     if (response.type != EconomyResponse.ResponseType.SUCCESS){
+                        //扣除全部吧!
                         response = moeEco.withdrawPlayer(dc,moeEco.getBalance(dc));
                     }
                 }
-                sender.sendMessage(settin.prefix + str + (str.isEmpty() ? "" : ",") + "签到成功." + (win ? "获得" : "损失") + response.amount + "鲸币 !");
+                sender.sendMessage(settin.prefix + str + (str.isEmpty() ? "" : ",") + "签到成功." + (win ? "获得" : "损失") + decimalFormat.format(response.amount) + "鲸币 !");
             } else {
                 sender.sendMessage("未适配经济插件" + economy.getName());
             }
