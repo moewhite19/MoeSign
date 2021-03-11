@@ -1,5 +1,6 @@
 package cn.whiteg.moesign;
 
+import cn.whiteg.moesign.config.ValueProvider;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -8,13 +9,12 @@ import java.io.IOException;
 import java.util.Set;
 
 public class Setting {
-    private final static int CONFIGVER = 1;
+    private final static int CONFIGVER = 2;
     private static FileConfiguration storage;
     private final MoeSign plugin;
     public boolean DEBUG;
     public String prefix; //前缀
-    public int maxMoney; //最大游戏币
-    public int minMoney; //最小游戏币
+    public ValueProvider money;
     public String seed;
 
     public Setting(MoeSign plugin) {
@@ -46,19 +46,12 @@ public class Setting {
 
         DEBUG = config.getBoolean("debug");
         prefix = config.getString("prefix");
-        maxMoney = config.getInt("maxMoney");
-        if (maxMoney < 0){
-            maxMoney = 0;
+        try{
+            money = ValueProvider.fromOf(config.get("money"));
+        }catch (Exception e){
+            money = ValueProvider.ZERO;
         }
-        minMoney = config.getInt("minMoney");
         seed = config.getString("seed");
-
-        //如果最大小于最小,互相交换值
-        if (maxMoney < minMoney){
-            int tmp = minMoney;
-            minMoney = maxMoney;
-            maxMoney = tmp;
-        }
         file = new File(file.getParentFile(),"storage.yml");
         if (file.exists()){
             storage = YamlConfiguration.loadConfiguration(file);

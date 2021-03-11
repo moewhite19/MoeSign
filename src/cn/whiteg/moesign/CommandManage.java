@@ -10,7 +10,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.*;
 
 public class CommandManage extends CommandInterface {
-    final public List<String> allCmd = Arrays.asList("reload","sign","test");
+    final public List<String> allCmd = Arrays.asList("reload","sign","test", "show");
     final public Map<String, CommandInterface> commandMap = new HashMap<>(allCmd.size());
 
     public CommandManage(JavaPlugin plugin) {
