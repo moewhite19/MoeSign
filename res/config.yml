@@ -2,15 +2,18 @@ ver: 2
 debug: false
 #插件消息前缀
 prefix: '§c§l[§f§lMoe §b§lSign§c§l] §r'
+
 #获得游戏币
-#示例 固定游戏币
+#示例:固定游戏币
 #money: 600
+
 #示例 随机范围游戏币(max和min值也同时支持套娃随机数等
 #money:
 #  type: 'random'
 #  max: 600
 #  min: -300
-#示例 抽签
+
+#示例:抽签
 #money:
 #  type: 'lots'
 #  list: [600,500]
@@ -20,5 +23,6 @@ money:
     type: 'lots'
     list: [200,300,500,600,700]
   min: -300
-#随机种子前缀(请修改已防止逆向种子破解)
+
+#随机种子(请修改已防止逆向种子破解)
 seed: "MoeSign"

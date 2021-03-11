@@ -49,7 +49,7 @@ public class Setting {
         try{
             money = ValueProvider.fromOf(config.get("money"));
         }catch (Exception e){
-            money = ValueProvider.ZERO;
+            money = ValueProvider.getZero();
         }
         seed = config.getString("seed");
         file = new File(file.getParentFile(),"storage.yml");
