@@ -9,8 +9,8 @@ public class RandomValue extends ValueProvider {
     final ValueProvider min;
 
     public RandomValue(ConfigurationSection cs) {
-        max = ValueProvider.fromOf(cs.get("max"));
-        min = ValueProvider.fromOf(cs.get("min"));
+        max = ValueProvider.prase(cs.get("max"));
+        min = ValueProvider.prase(cs.get("min"));
     }
 
     @Override

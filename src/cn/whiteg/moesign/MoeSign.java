@@ -1,5 +1,6 @@
 package cn.whiteg.moesign;
 
+import cn.whiteg.mmocore.common.CommandManage;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;

@@ -2,8 +2,8 @@ package cn.whiteg.moesign.commands;
 
 import cn.whiteg.mmocore.DataCon;
 import cn.whiteg.mmocore.MMOCore;
+import cn.whiteg.mmocore.common.CommandInterface;
 import cn.whiteg.moeEco.VaultHandler;
-import cn.whiteg.moesign.CommandInterface;
 import cn.whiteg.moesign.Setting;
 import cn.whiteg.moesign.utils.StringUtils;
 import net.milkbowl.vault.economy.Economy;
@@ -24,6 +24,10 @@ public class sign extends CommandInterface {
     private final static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     //    private final static DecimalFormat decimalFormat = new DecimalFormat("####,####,####,####.##"); //数字输出格式
     private final static String zeroDate = dateFormat.format(new Date(0));
+
+    public static String getNowDate() {
+        return dateFormat.format(new Date());
+    }
 
     @Override
     public boolean onCommand(CommandSender sender,Command cmd,String label,String[] args) {
@@ -102,9 +106,5 @@ public class sign extends CommandInterface {
     @Override
     public List<String> onTabComplete(CommandSender sender,Command cmd,String label,String[] args) {
         return null;
-    }
-
-    public static String getNowDate() {
-        return dateFormat.format(new Date());
     }
 }

@@ -1,6 +1,6 @@
 package cn.whiteg.moesign.commands;
 
-import cn.whiteg.moesign.CommandInterface;
+import cn.whiteg.mmocore.common.CommandInterface;
 import cn.whiteg.moesign.Setting;
 import cn.whiteg.moesign.utils.StringUtils;
 import org.bukkit.command.Command;
@@ -14,10 +14,6 @@ import static cn.whiteg.moesign.MoeSign.plugin;
 public class show extends CommandInterface {
     @Override
     public boolean onCommand(CommandSender sender,Command cmd,String label,String[] args) {
-        if (!sender.hasPermission("whiteg.test")){
-            sender.sendMessage("§b权限不足");
-            return true;
-        }
         String code; //财富密码
         if (args.length > 0){
             code = StringUtils.join(args," ");
@@ -47,5 +43,10 @@ public class show extends CommandInterface {
     @Override
     public List<String> onTabComplete(CommandSender sender,Command cmd,String label,String[] args) {
         return null;
+    }
+
+    @Override
+    public boolean canUseCommand(CommandSender sender) {
+        return sender.hasPermission("whiteg.test");
     }
 }

@@ -18,7 +18,7 @@ public abstract class ValueProvider {
         registerType(LotsValue.class); //抽签
     }
 
-    public static ValueProvider fromOf(Object o) {
+    public static ValueProvider prase(Object o) {
         if (o instanceof ConfigurationSection){
             ConfigurationSection cs = (ConfigurationSection) o;
             String type = cs.getString("type");

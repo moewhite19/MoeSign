@@ -15,7 +15,7 @@ public class LotsValue extends ValueProvider {
         } else {
             list = new ValueProvider[l.size()];
             for (int i = 0; i < l.size(); i++) {
-                list[i] = ValueProvider.fromOf(l.get(i));
+                list[i] = ValueProvider.prase(l.get(i));
             }
         }
     }

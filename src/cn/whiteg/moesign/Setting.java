@@ -47,7 +47,7 @@ public class Setting {
         DEBUG = config.getBoolean("debug");
         prefix = config.getString("prefix");
         try{
-            money = ValueProvider.fromOf(config.get("money"));
+            money = ValueProvider.prase(config.get("money"));
         }catch (Exception e){
             money = ValueProvider.getZero();
         }
