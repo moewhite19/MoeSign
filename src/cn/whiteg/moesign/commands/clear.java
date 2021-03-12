@@ -12,7 +12,7 @@ import java.util.List;
 public class clear extends HasCommandInterface {
 
     @Override
-    public boolean executor(CommandSender sender,Command cmd,String label,String[] args) {
+    public boolean executo(CommandSender sender,Command cmd,String label,String[] args) {
         DataCon dc = MMOCore.getPlayerData(sender);
         if (dc == null) return false;
         dc.set(MoeSign.plugin.getName() + ".date",null);

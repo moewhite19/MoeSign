@@ -13,7 +13,7 @@ import static cn.whiteg.moesign.MoeSign.plugin;
 
 public class show extends HasCommandInterface {
     @Override
-    public boolean executor(CommandSender sender,Command cmd,String label,String[] args) {
+    public boolean executo(CommandSender sender,Command cmd,String label,String[] args) {
         String code; //财富密码
         if (args.length > 0){
             code = StringUtils.join(args," ");
