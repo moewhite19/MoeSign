@@ -1,6 +1,6 @@
 package cn.whiteg.moesign.commands;
 
-import cn.whiteg.mmocore.common.CommandInterface;
+import cn.whiteg.mmocore.common.HasCommandInterface;
 import cn.whiteg.moesign.Setting;
 import cn.whiteg.moesign.utils.StringUtils;
 import org.bukkit.command.Command;
@@ -11,9 +11,9 @@ import java.util.Random;
 
 import static cn.whiteg.moesign.MoeSign.plugin;
 
-public class show extends CommandInterface {
+public class show extends HasCommandInterface {
     @Override
-    public boolean onCommand(CommandSender sender,Command cmd,String label,String[] args) {
+    public boolean executor(CommandSender sender,Command cmd,String label,String[] args) {
         String code; //财富密码
         if (args.length > 0){
             code = StringUtils.join(args," ");
