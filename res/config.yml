@@ -14,9 +14,8 @@ prefix: '§c§l[§f§lMoe §b§lSign§c§l] §r'
 #  min: -300
 
 #示例:抽签
-#money:
-#  type: 'lots'
-#  list: [600,500]
+#money: [600,500]
+
 money:
   type: 'random'
   max: #开始套娃

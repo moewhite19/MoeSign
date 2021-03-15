@@ -5,6 +5,7 @@ import org.bukkit.configuration.ConfigurationSection;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -19,7 +20,13 @@ public abstract class ValueProvider {
     }
 
     public static ValueProvider prase(Object o) {
-        if (o instanceof ConfigurationSection){
+        if (o instanceof String){
+            return new FixedValue(Double.parseDouble((String) o));
+        } else if (o instanceof Number){
+            return new FixedValue(((Number) o).doubleValue());
+        } else if (o instanceof Collection){
+            return new LotsValue((Collection<?>) o);
+        } else if (o instanceof ConfigurationSection){
             ConfigurationSection cs = (ConfigurationSection) o;
             String type = cs.getString("type");
             if (type == null){
@@ -33,10 +40,6 @@ public abstract class ValueProvider {
                 e.printStackTrace();
                 return getZero();
             }
-        } else if (o instanceof Number){
-            return new FixedValue(((Number) o).doubleValue());
-        } else if (o instanceof String){
-            return new FixedValue(Double.parseDouble((String) o));
         }
         return getZero();
     }

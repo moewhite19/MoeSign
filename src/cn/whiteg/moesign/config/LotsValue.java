@@ -2,6 +2,7 @@ package cn.whiteg.moesign.config;
 
 import org.bukkit.configuration.ConfigurationSection;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
@@ -18,6 +19,20 @@ public class LotsValue extends ValueProvider {
                 list[i] = ValueProvider.prase(l.get(i));
             }
         }
+    }
+
+    public LotsValue(Collection<?> collection) {
+        if (collection == null){
+            list = null;
+        } else {
+            list = new ValueProvider[collection.size()];
+            int i = 0;
+            for (Object obj : collection) {
+                list[i] = ValueProvider.prase(obj);
+                i++;
+            }
+        }
+
     }
 
     @Override
