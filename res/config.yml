@@ -18,9 +18,7 @@ prefix: '§c§l[§f§lMoe §b§lSign§c§l] §r'
 
 money:
   type: 'random'
-  max: #开始套娃
-    type: 'lots'
-    list: [200,300,500,600,700]
+  max: [200,300,500,600,700] #开始套娃
   min: -300
 
 #随机种子(请修改已防止逆向种子破解)

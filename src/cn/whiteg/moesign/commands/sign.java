@@ -64,6 +64,7 @@ public class sign extends CommandInterface {
                 random = new Random(setting.seed.hashCode() ^ nowDate.hashCode() ^ code.hashCode());
             }
 
+            //获取随机数
             int money = (int) setting.money.getValue(random);
             data.set("date",nowDate);
 
