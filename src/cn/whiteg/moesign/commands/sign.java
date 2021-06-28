@@ -65,32 +65,37 @@ public class sign extends CommandInterface {
             }
 
             //获取随机数
-            int money = (int) setting.money.getValue(random);
+            int amount = (int) setting.money.getValue(random);
             data.set("date",nowDate);
 
-            boolean win = money > 0;
+            boolean win = amount > 0;
+            if(!win) amount = Math.abs(amount);
             EconomyResponse response;
 
             //引用MoeEco
-            if (economy instanceof VaultHandler){
-                VaultHandler moeEco = (VaultHandler) economy;
+            if (economy instanceof VaultHandler moeEco){
                 if (win){
-                    response = moeEco.depositPlayer(dc,money);
+                    response = moeEco.depositPlayer(dc,amount);
                 } else {
-                    response = moeEco.withdrawPlayer(dc,Math.abs(money));
+                    response = moeEco.withdrawPlayer(dc,amount);
                     //如果玩家账户余额不够扣怎么办呢...
                     if (response.type != EconomyResponse.ResponseType.SUCCESS){
-                        //扣除全部吧!
-                        response = moeEco.withdrawPlayer(dc,moeEco.getBalance(dc));
+//                        //扣除全部吧!
+//                        response = moeEco.withdrawPlayer(dc,moeEco.getBalance(dc));
+                        //划掉, 扣成负数吧
+                        var money = moeEco.getBigBalance(dc);
+                        var finalMoney = money.add(VaultHandler.toBigDecimal(amount)).doubleValue();
+                        moeEco.setBalance(dc,finalMoney);
+                        response = new EconomyResponse(amount,finalMoney,EconomyResponse.ResponseType.SUCCESS,"");
                     }
                 }
                 sender.sendMessage(setting.prefix + code + (code.isEmpty() ? "" : ",") + "签到成功." + (win ? "获得" : "丢失") + "§f" + moeEco.getDecimalFormat().format(response.amount) + "!");
             } else {
                 //其他Vault经济插件
                 if (win){
-                    response = economy.depositPlayer(dc.getName(),money);
+                    response = economy.depositPlayer(dc.getName(),amount);
                 } else {
-                    response = economy.withdrawPlayer(dc.getName(),Math.abs(money));
+                    response = economy.withdrawPlayer(dc.getName(),Math.abs(amount));
                     //如果玩家账户余额不够扣怎么办呢...
                     if (response.type != EconomyResponse.ResponseType.SUCCESS){
                         //扣除全部吧!
