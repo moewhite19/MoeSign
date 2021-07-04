@@ -84,7 +84,7 @@ public class sign extends CommandInterface {
 //                        response = moeEco.withdrawPlayer(dc,moeEco.getBalance(dc));
                         //划掉, 扣成负数吧
                         var money = moeEco.getBigBalance(dc);
-                        var finalMoney = money.add(VaultHandler.toBigDecimal(amount)).doubleValue();
+                        var finalMoney = money.subtract(VaultHandler.toBigDecimal(amount)).doubleValue();
                         moeEco.setBalance(dc,finalMoney);
                         response = new EconomyResponse(amount,finalMoney,EconomyResponse.ResponseType.SUCCESS,"");
                     }

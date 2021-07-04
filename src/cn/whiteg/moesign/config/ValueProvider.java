@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Random;
 
 public abstract class ValueProvider {
-    public static Map<String, Constructor<? extends ValueProvider>> types = new HashMap<>();
+    public static Map<String, Constructor<? extends ValueProvider>> types = new HashMap<>(2);
     private static FixedValue ZERO;
 
     static {
@@ -26,8 +26,7 @@ public abstract class ValueProvider {
             return new FixedValue(((Number) o).doubleValue());
         } else if (o instanceof Collection){
             return new LotsValue((Collection<?>) o);
-        } else if (o instanceof ConfigurationSection){
-            ConfigurationSection cs = (ConfigurationSection) o;
+        } else if (o instanceof ConfigurationSection cs){
             String type = cs.getString("type");
             if (type == null){
                 throw new IllegalStateException("无效配置" + cs.getName());
