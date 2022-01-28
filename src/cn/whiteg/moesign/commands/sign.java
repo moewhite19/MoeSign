@@ -69,7 +69,7 @@ public class sign extends CommandInterface {
             data.set("date",nowDate);
 
             boolean win = amount > 0;
-            if(!win) amount = Math.abs(amount);
+            if (!win) amount = Math.abs(amount);
             EconomyResponse response;
 
             //引用MoeEco
@@ -89,7 +89,7 @@ public class sign extends CommandInterface {
                         response = new EconomyResponse(amount,finalMoney,EconomyResponse.ResponseType.SUCCESS,"");
                     }
                 }
-                sender.sendMessage(setting.prefix + code + (code.isEmpty() ? "" : ",") + "签到成功." + (win ? "获得" : "丢失") + "§f" + moeEco.getDecimalFormat().format(response.amount) + "!");
+                sender.sendMessage(setting.prefix +/* code + (code.isEmpty() ? "" : ",") +*/ (win ? "获得" : "丢失") + "§f" + moeEco.getDecimalFormat().format(response.amount) + "!");
             } else {
                 //其他Vault经济插件
                 if (win){
@@ -102,7 +102,7 @@ public class sign extends CommandInterface {
                         response = economy.withdrawPlayer(dc.getName(),economy.getBalance(dc.getName()));
                     }
                 }
-                sender.sendMessage(setting.prefix + code + (code.isEmpty() ? "" : ",") + "签到成功." + (win ? "获得" : "丢失") + "§f" + (response.amount) + "!");
+                sender.sendMessage(setting.prefix + /*code + (code.isEmpty() ? "" : ",") +*/ (win ? "获得" : "丢失") + "§f" + (response.amount) + "!");
                 sender.sendMessage("未适配经济插件" + economy.getName());
             }
         }
