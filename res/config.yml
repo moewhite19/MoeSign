@@ -23,3 +23,13 @@ money:
 
 #随机种子(请修改已防止逆向种子破解)
 seed: "MoeSign"
+
+#在线奖励
+OnlineRewards:
+  enable: false
+  #发送间隔，单位:分钟
+  interval: 20
+  money:
+    type: 'random'
+    max: 600
+    min: 100

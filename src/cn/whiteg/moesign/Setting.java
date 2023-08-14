@@ -1,6 +1,7 @@
 package cn.whiteg.moesign;
 
 import cn.whiteg.moesign.config.ValueProvider;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -16,6 +17,7 @@ public class Setting {
     public String prefix; //前缀
     public ValueProvider money;
     public String seed;
+    public OnlineRewards onlineRewards;
 
     public Setting(MoeSign plugin) {
         this.plugin = plugin;
@@ -52,6 +54,17 @@ public class Setting {
             money = ValueProvider.getZero();
         }
         seed = config.getString("seed");
+
+        ConfigurationSection cs;
+        if (onlineRewards != null){
+            onlineRewards.stop();
+            onlineRewards = null;
+        }
+        cs = config.getConfigurationSection("OnlineRewards");
+        if (cs != null && cs.getBoolean("enable")){
+            onlineRewards = new OnlineRewards(plugin,cs.getInt("interval"),ValueProvider.prase(cs.get("money")));
+        }
+
         file = new File(file.getParentFile(),"storage.yml");
         if (file.exists()){
             storage = YamlConfiguration.loadConfiguration(file);

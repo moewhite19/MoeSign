@@ -3,6 +3,7 @@ package cn.whiteg.moesign.utils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * The class {@code StringUtils} is an utility class for string
@@ -16,6 +17,8 @@ import java.util.List;
  * @since 2019-03-24 13:35
  */
 public class StringUtils {
+    public static final String CARS_36 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
     /**
      * 移除前面的空格
      *
@@ -87,5 +90,19 @@ public class StringUtils {
         }
         sb.delete(sb.length() - arg.length(),sb.length());
         return sb.toString();
+    }
+
+    /**
+     * 　　 * 返回一个定长的随机字符串(只包含大小写字母、数字)
+     * 　　 *
+     * 　　 * @param length 随机字符串长度
+     * 　　 * @return 随机字符串
+     */
+    public static String generateString(int length,Random random) {
+        final char[] chars = new char[length];
+        for (int i = 0; i < length; i++) {
+            chars[i] = CARS_36.charAt(random.nextInt(CARS_36.length()));
+        }
+        return new String(chars);
     }
 }

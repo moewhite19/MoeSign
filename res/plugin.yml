@@ -4,7 +4,7 @@ version: 1.1
 api-version: 1.13
 author: MoeWhite
 depend: [MMOCore, Vault]
-softdepend: [MoeEco]
+softdepend: [MoeEco, MoeAfk]
 commands:
   moesign:
     description: The is MoeSign Command

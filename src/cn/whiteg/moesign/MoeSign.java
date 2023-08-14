@@ -1,6 +1,7 @@
 package cn.whiteg.moesign;
 
 import cn.whiteg.mmocore.common.CommandManage;
+import cn.whiteg.mmocore.common.PluginBase;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
@@ -39,12 +40,17 @@ public class MoeSign extends PluginBase {
         }
         logger.info("全部加载完成");
         Bukkit.getScheduler().runTask(this,() -> {
-            if (Bukkit.getPluginManager().getPlugin("Vault") != null){
+            if (Bukkit.getPluginManager().isPluginEnabled("Vault")){
                 RegisteredServiceProvider<Economy> economyProvider = getServer().getServicesManager().getRegistration(Economy.class);
                 if (economyProvider != null){
                     this.economy = economyProvider.getProvider();
                 }
             }
+
+            if (setting.onlineRewards != null){
+                setting.onlineRewards.start();
+            }
+
         });
     }
 
@@ -57,6 +63,9 @@ public class MoeSign extends PluginBase {
     public void onReload() {
         logger.info("--开始重载--");
         setting.reload();
+        if (setting.onlineRewards != null){
+            setting.onlineRewards.start();
+        }
         logger.info("--重载完成--");
     }
 
