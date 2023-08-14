@@ -157,7 +157,7 @@ public class OnlineRewards implements Listener, Runnable {
                 }
                 return true;
             } else {
-                player.sendMessage(plugin.setting.prefix + " §b阁下已经领取过啦，稍后在领吧!");
+                player.sendMessage(plugin.setting.prefix + " §b阁下已经领取过啦，稍后再领吧!");
             }
             return false;
         }
