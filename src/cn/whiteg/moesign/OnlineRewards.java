@@ -145,7 +145,7 @@ public class OnlineRewards implements Listener, Runnable {
                 code = null;
                 final Economy economy = plugin.getEconomy();
                 if (economy instanceof VaultHandler moeEco){
-                    final EconomyResponse response = moeEco.withdrawPlayer(player,value);
+                    final EconomyResponse response = moeEco.depositPlayer(player,value);
                     if (response.type == EconomyResponse.ResponseType.SUCCESS){
                         player.sendMessage(plugin.setting.prefix + " §b领取成功! 获得§f" + moeEco.getDecimalFormat().format(response.amount));
                     } else {
