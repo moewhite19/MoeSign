@@ -24,7 +24,7 @@ import java.util.*;
 
 public class OnlineRewards implements Runnable {
     static long TIME_ONE_DAY = 86400000L; //一天的时间
-    private int SAV_VER = 1; //文件储存版本号
+    private int SAV_VER = 2; //文件储存版本号
     private final MoeSign plugin;
     File saveFile;
     private final int interval;
@@ -107,7 +107,7 @@ public class OnlineRewards implements Runnable {
                             OnlineTimeStatus status = new OnlineTimeStatus(uuid,readName);
                             status.mTime = dataIn.readLong();
                             status.dTime = dataIn.readLong();
-                            statusMap.put(uuid,status);
+                            if (dataIn.readShort() == '\n') statusMap.put(uuid,status);
                         }
                     }
                 }
@@ -143,6 +143,7 @@ public class OnlineRewards implements Runnable {
                     dataOut.writeLong(status.uuid.getLeastSignificantBits());
                     dataOut.writeLong(status.mTime);
                     dataOut.writeLong(status.dTime);
+                    dataOut.writeShort('\n');
                     //todo 暂时只储存在线时长，不管未领取的奖励
                 }
             }
