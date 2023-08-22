@@ -8,6 +8,7 @@ import cn.whiteg.moesign.Setting;
 import cn.whiteg.moesign.utils.StringUtils;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -90,6 +91,7 @@ public class sign extends CommandInterface {
                     }
                 }
                 sender.sendMessage(setting.prefix +/* code + (code.isEmpty() ? "" : ",") +*/ (win ? "获得" : "丢失") + "§f" + moeEco.getDecimalFormat().format(response.amount) + "!");
+                Bukkit.getConsoleSender().sendMessage(setting.prefix +/* code + (code.isEmpty() ? "" : ",") +*/ "§f" + sender.getName() + "§b" + (win ? "获得" : "丢失") + "§f" + moeEco.getDecimalFormat().format(response.amount) + "!");
             } else {
                 //其他Vault经济插件
                 if (win){

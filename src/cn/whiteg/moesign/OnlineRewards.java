@@ -19,26 +19,28 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
 
-public class OnlineRewards implements Listener, Runnable {
+public class OnlineRewards implements Runnable {
     private final MoeSign plugin;
     private final int interval;
     final ValueProvider money;
     private BukkitTask task;
-    private Map<UUID, Status> statusMap = Collections.synchronizedMap(new HashMap<>());
-    private static Random random = new Random();
+    private final Map<UUID, Status> statusMap = Collections.synchronizedMap(new HashMap<>());
+    private static final Random random = new Random();
     AfkTimer afkTimer;
     long later = System.currentTimeMillis();
+    static long oneDay = 86400000L; //一天的时间
+    private int date;
 
 
     public OnlineRewards(MoeSign plugin,int interval,ValueProvider money) {
         this.plugin = plugin;
         this.interval = interval * 1000 * 60;
         this.money = money;
+        date = (int) ((System.currentTimeMillis() + TimeZone.getDefault().getRawOffset()) / oneDay);
     }
 
     public void start() {
@@ -47,22 +49,35 @@ public class OnlineRewards implements Listener, Runnable {
         if (Bukkit.getPluginManager().isPluginEnabled("MoeAfk")){
             afkTimer = MoeAfk.plugin.afkTimer;
         }
-        plugin.regListener(this);
-        final Collection<? extends Player> players = Bukkit.getOnlinePlayers();
-        if (!players.isEmpty()){
-            for (Player player : players) {
-                statusMap.put(player.getUniqueId(),new Status(player));
-            }
+    }
+
+    //当日期变化时返回true
+    public boolean hasDateChange(long now) {
+        int nDate = (int) ((now + TimeZone.getDefault().getRawOffset()) / oneDay);
+        if (nDate != date){
+            date = nDate;
+            return true;
         }
+        return false;
     }
 
     @Override
     public void run() {
         final long now = System.currentTimeMillis();
         final long time = now - later;
-        statusMap.forEach((uuid,status) -> {
-            status.task(now,time);
-        });
+
+        if (hasDateChange(now)){
+            for (UUID uuid : statusMap.keySet().toArray(new UUID[0])) {
+                //跨日期时删除不在线的玩家
+                if (Bukkit.getPlayer(uuid) == null){
+                    statusMap.remove(uuid);
+                }
+            }
+        }
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            final Status status = statusMap.computeIfAbsent(player.getUniqueId(),uuid -> new Status(player));
+            status.task(player,now,time);
+        }
         later = now; //记录上次的时间
     }
 
@@ -71,19 +86,6 @@ public class OnlineRewards implements Listener, Runnable {
             return;
         }
         task.cancel();
-        plugin.unregListener(this);
-    }
-
-    @EventHandler
-    public void onJoin(PlayerJoinEvent event) {
-        final Player player = event.getPlayer();
-        statusMap.put(player.getUniqueId(),new Status(player));
-    }
-
-    @EventHandler
-    public void onQuit(PlayerQuitEvent event) {
-        final Player player = event.getPlayer();
-        statusMap.remove(player.getUniqueId());
     }
 
     class CommandInter extends CommandInterface {
@@ -91,10 +93,11 @@ public class OnlineRewards implements Listener, Runnable {
         public boolean onCommand(CommandSender sender,Command command,String label,String[] args) {
             if (sender instanceof Player player){
                 if (args.length > 0){
-                    return statusMap.get(player.getUniqueId()).onCommand(args[0]);
+                    return statusMap.get(player.getUniqueId()).onCommand(player,args[0]);
                 } else if (player.hasPermission("whiteg.test")){
-                    final Status status = statusMap.get(player.getUniqueId());
-                    player.sendMessage("剩余: " + CommonUtils.tanMintoh(status.nextTime - System.currentTimeMillis()));
+                    statusMap.forEach((uuid,status) -> {
+                        player.sendMessage(status.getName() + "§b累积时间: §f" + CommonUtils.tanMintoh(status.mTime) + "§b ,总累积时间: §f" + CommonUtils.tanMintoh(status.dTime));
+                    });
                 }
             }
             return false;
@@ -112,35 +115,40 @@ public class OnlineRewards implements Listener, Runnable {
     }
 
     class Status {
-        private final Player player;
+        private final UUID uuid;
+        private final String name;
         String code = null;
         double value;
-        long nextTime;
+        long mTime; //领奖累积时间
+        long dTime; //总累积时间
 
         public Status(Player player) {
-            this.player = player;
-            nextTime = System.currentTimeMillis() + interval;
+            this.uuid = player.getUniqueId();
+            name = player.getName();
         }
 
-        public void task(long now,long time) {
+        public void task(Player player,long now,long time) {
             //当玩家在挂机时，将nextTime往后退
             if (afkTimer.getAfkStaus(player).isAfkin()){
-                nextTime += time;
                 return;
             }
-            if (now >= nextTime){
+            mTime += time;
+            dTime += time;
+            if (time >= interval){
+                //重置奖励时间
+                mTime -= interval;
                 //生成代码和货币数量
                 value = money.getValue(random);
+                if (value < 0) value = 0; //暂时不支持负数
                 code = StringUtils.generateString(4,random);
                 //发送通知
                 final TextComponent text = Component.text(plugin.setting.prefix + " §b阁下已达到需求获得在线奖励，").append(Component.text("§b§l[点我领取]")
                         .clickEvent(ClickEvent.runCommand("/moesign tr " + code)));
                 player.sendMessage(text);
-                nextTime = now + interval;
             }
         }
 
-        public boolean onCommand(String arg) {
+        public boolean onCommand(Player player,String arg) {
             if (arg.equals(code)){
                 code = null;
                 final Economy economy = plugin.getEconomy();
@@ -148,6 +156,7 @@ public class OnlineRewards implements Listener, Runnable {
                     final EconomyResponse response = moeEco.depositPlayer(player,value);
                     if (response.type == EconomyResponse.ResponseType.SUCCESS){
                         player.sendMessage(plugin.setting.prefix + " §b领取成功! 获得§f" + moeEco.getDecimalFormat().format(response.amount));
+                        Bukkit.getConsoleSender().sendMessage(plugin.setting.prefix +/* code + (code.isEmpty() ? "" : ",") +*/ "§f" + player.getName() + "§b获得§f" + moeEco.getDecimalFormat().format(response.amount) + "!");
                     } else {
                         player.sendMessage(plugin.setting.prefix + " §c领取失败! 原因§f" + response.errorMessage);
                     }
@@ -162,6 +171,8 @@ public class OnlineRewards implements Listener, Runnable {
             return false;
         }
 
-
+        public String getName() {
+            return name;
+        }
     }
 }
