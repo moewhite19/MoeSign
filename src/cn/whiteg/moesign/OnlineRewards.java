@@ -16,31 +16,33 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class OnlineRewards implements Runnable {
+    static long TIME_ONE_DAY = 86400000L; //一天的时间
+    private int SAV_VER = 1; //文件储存版本号
     private final MoeSign plugin;
+    File saveFile;
     private final int interval;
-    final ValueProvider money;
+    final ValueProvider moneyProvider;
     private BukkitTask task;
-    private final Map<UUID, Status> statusMap = Collections.synchronizedMap(new HashMap<>());
+    private final Map<UUID, OnlineTimeStatus> statusMap = Collections.synchronizedMap(new HashMap<>());
     private static final Random random = new Random();
     AfkTimer afkTimer;
     long later = System.currentTimeMillis();
-    static long oneDay = 86400000L; //一天的时间
     private int date;
 
 
     public OnlineRewards(MoeSign plugin,int interval,ValueProvider money) {
         this.plugin = plugin;
         this.interval = interval * 1000 * 60;
-        this.money = money;
-        date = (int) ((System.currentTimeMillis() + TimeZone.getDefault().getRawOffset()) / oneDay);
+        this.moneyProvider = money;
+        date = (int) ((System.currentTimeMillis() + TimeZone.getDefault().getRawOffset()) / TIME_ONE_DAY);
+        saveFile = new File(plugin.getDataFolder(),"online_reward.sav");
     }
 
     public void start() {
@@ -49,11 +51,12 @@ public class OnlineRewards implements Runnable {
         if (Bukkit.getPluginManager().isPluginEnabled("MoeAfk")){
             afkTimer = MoeAfk.plugin.afkTimer;
         }
+        load();
     }
 
     //当日期变化时返回true
     public boolean hasDateChange(long now) {
-        int nDate = (int) ((now + TimeZone.getDefault().getRawOffset()) / oneDay);
+        int nDate = (int) ((now + TimeZone.getDefault().getRawOffset()) / TIME_ONE_DAY);
         if (nDate != date){
             date = nDate;
             return true;
@@ -75,7 +78,7 @@ public class OnlineRewards implements Runnable {
             }
         }
         for (Player player : Bukkit.getOnlinePlayers()) {
-            final Status status = statusMap.computeIfAbsent(player.getUniqueId(),uuid -> new Status(player));
+            final OnlineTimeStatus status = statusMap.computeIfAbsent(player.getUniqueId(),uuid -> new OnlineTimeStatus(player));
             status.task(player,now,time);
         }
         later = now; //记录上次的时间
@@ -86,6 +89,66 @@ public class OnlineRewards implements Runnable {
             return;
         }
         task.cancel();
+        save();
+    }
+
+    public void load() {
+        if (saveFile.exists()){
+            byte[] head = plugin.getName().getBytes(StandardCharsets.UTF_8);
+            try{
+                try (DataInputStream dataIn = new DataInputStream(new FileInputStream(saveFile))){
+                    final byte[] rHead = dataIn.readNBytes(head.length);
+                    //文件头&版本号&日期都符合才加载
+                    if (Arrays.equals(head,rHead) && dataIn.readInt() == SAV_VER && dataIn.readInt() == date){
+                        while (dataIn.available() > 0) {
+                            String readName = new String(dataIn.readNBytes(dataIn.read()),StandardCharsets.UTF_8);
+//                            plugin.getLogger().info("加载名字: " + readName);
+                            UUID uuid = new UUID(dataIn.readLong(),dataIn.readLong());
+                            OnlineTimeStatus status = new OnlineTimeStatus(uuid,readName);
+                            status.mTime = dataIn.readLong();
+                            status.dTime = dataIn.readLong();
+                            statusMap.put(uuid,status);
+                        }
+                    }
+                }
+            }catch (IOException e){
+                plugin.getLogger().warning("无法加载文件: " + saveFile);
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void save() {
+        if (statusMap.isEmpty()) return; //空的怎么储存?
+        try{
+            if (!saveFile.exists() && !saveFile.createNewFile()){
+                plugin.getLogger().warning("无法创建文件: " + saveFile);
+                return;
+            }
+            byte[] head = plugin.getName().getBytes(StandardCharsets.UTF_8);
+            try (DataOutputStream dataOut = new DataOutputStream(new FileOutputStream(saveFile))){
+                dataOut.write(head);
+                dataOut.writeInt(SAV_VER);
+                dataOut.writeInt(date);
+                for (Map.Entry<UUID, OnlineTimeStatus> entry : statusMap.entrySet()) {
+                    OnlineTimeStatus status = entry.getValue();
+                    final byte[] nameArray = status.name.getBytes(StandardCharsets.UTF_8);
+                    if (nameArray.length > 255){
+                        plugin.getLogger().warning("name bytes length > 512: " + status.name);
+                        continue;
+                    }
+                    dataOut.write(nameArray.length & 0xff);
+                    dataOut.write(nameArray);
+                    dataOut.writeLong(status.uuid.getMostSignificantBits());
+                    dataOut.writeLong(status.uuid.getLeastSignificantBits());
+                    dataOut.writeLong(status.mTime);
+                    dataOut.writeLong(status.dTime);
+                    //todo 暂时只储存在线时长，不管未领取的奖励
+                }
+            }
+        }catch (IOException e){
+            e.printStackTrace();
+        }
     }
 
     class CommandInter extends CommandInterface {
@@ -94,11 +157,14 @@ public class OnlineRewards implements Runnable {
             if (sender instanceof Player player){
                 if (args.length > 0){
                     return statusMap.get(player.getUniqueId()).onCommand(player,args[0]);
-                } else if (player.hasPermission("whiteg.test")){
-                    statusMap.forEach((uuid,status) -> {
-                        player.sendMessage(status.getName() + "§b累积时间: §f" + CommonUtils.tanMintoh(status.mTime) + "§b ,总累积时间: §f" + CommonUtils.tanMintoh(status.dTime));
-                    });
                 }
+            }
+            if (sender.hasPermission("whiteg.test")){
+                statusMap.forEach((uuid,status) -> {
+                    sender.sendMessage(status.getName() + "§b累积时间: §f" + CommonUtils.tanMintoh(status.mTime) + "§b ,总累积时间: §f" + CommonUtils.tanMintoh(status.dTime));
+                    sender.sendMessage("§b当前领取需要时长为: §f" + CommonUtils.tanMintoh(interval));
+                });
+                return true;
             }
             return false;
         }
@@ -114,7 +180,7 @@ public class OnlineRewards implements Runnable {
         }
     }
 
-    class Status {
+    class OnlineTimeStatus {
         private final UUID uuid;
         private final String name;
         String code = null;
@@ -122,23 +188,28 @@ public class OnlineRewards implements Runnable {
         long mTime; //领奖累积时间
         long dTime; //总累积时间
 
-        public Status(Player player) {
+        public OnlineTimeStatus(Player player) {
             this.uuid = player.getUniqueId();
-            name = player.getName();
+            this.name = player.getName();
+        }
+
+        public OnlineTimeStatus(UUID uuid,String name) {
+            this.uuid = uuid;
+            this.name = name;
         }
 
         public void task(Player player,long now,long time) {
             //当玩家在挂机时，将nextTime往后退
-            if (afkTimer.getAfkStaus(player).isAfkin()){
-                return;
-            }
+            final AfkTimer.AfkStaus afkStaus = afkTimer.getAfkStaus(player);
+            if (afkStaus == null || afkStaus.isAfkin()) return;
             mTime += time;
             dTime += time;
-            if (time >= interval){
+            if (mTime >= interval){
                 //重置奖励时间
-                mTime -= interval;
+//                mTime -= interval;
+                mTime = mTime % interval;
                 //生成代码和货币数量
-                value = money.getValue(random);
+                value = moneyProvider.getValue(random);
                 if (value < 0) value = 0; //暂时不支持负数
                 code = StringUtils.generateString(4,random);
                 //发送通知
