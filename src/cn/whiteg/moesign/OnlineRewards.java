@@ -162,8 +162,8 @@ public class OnlineRewards implements Runnable {
             if (sender.hasPermission("whiteg.test")){
                 statusMap.forEach((uuid,status) -> {
                     sender.sendMessage(status.getName() + "§b累积时间: §f" + CommonUtils.tanMintoh(status.mTime) + "§b ,总累积时间: §f" + CommonUtils.tanMintoh(status.dTime));
-                    sender.sendMessage("§b当前领取需要时长为: §f" + CommonUtils.tanMintoh(interval));
                 });
+                sender.sendMessage("§b当前领取需要时长为: §f" + CommonUtils.tanMintoh(interval));
                 return true;
             }
             return false;
